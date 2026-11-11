@@ -71,9 +71,9 @@
   /* 站在草地上的小白狗 */
   .dog {
     position: fixed; z-index: 0;
-    left: calc(50% - 350px);
+    left: calc(50% - 400px);
     bottom: calc(clamp(54px, 13vh, 140px) - 2px);
-    height: clamp(110px, 20vh, 170px); width: auto;
+    height: clamp(150px, 27vh, 240px); width: auto;
     pointer-events: none;
     transform-origin: 50% 100%;
     animation: sway 5s ease-in-out infinite;
@@ -81,7 +81,7 @@
   @keyframes sway { 0%, 100% { rotate: -2deg; } 50% { rotate: 2deg; } }
   @media (max-width: 760px) {
     /* 窄螢幕沒有旁邊的空間，小狗改站到毛毛怪的肩膀上 */
-    .dog { position: absolute; left: auto; right: 0; bottom: auto; top: -56px; height: 80px; }
+    .dog { position: absolute; left: auto; right: 0; bottom: auto; top: -62px; height: 88px; }
   }
 
   .monster {
@@ -203,25 +203,7 @@
   <i class="water"></i>
 
   <main class="monster" id="monster" aria-label="工程計算機">
-    <svg class="dog" viewBox="0 0 120 172" aria-hidden="true">
-      <g fill="none" stroke-linecap="round">
-        <g stroke="#121212" stroke-width="21">
-          <path d="M42 94L18 114M78 94L102 112M50 132L40 158M70 132L80 158"/>
-        </g>
-        <g stroke="#fff" stroke-width="14">
-          <path d="M42 94L18 114M78 94L102 112M50 132L40 158M70 132L80 158"/>
-        </g>
-      </g>
-      <g fill="#fff" stroke="#121212" stroke-width="3.5">
-        <ellipse cx="60" cy="108" rx="25" ry="33"/>
-        <ellipse cx="94" cy="54" rx="11" ry="22" transform="rotate(-12 94 54)"/>
-        <path d="M60 8C84 8 96 26 95 46C94 66 80 76 60 76C40 76 26 66 26 46C26 26 38 8 60 8Z"/>
-      </g>
-      <ellipse cx="47" cy="44" rx="4" ry="6.5" fill="#3fae4a" stroke="#121212" stroke-width="2.5"/>
-      <ellipse cx="70" cy="46" rx="4" ry="6.5" fill="#3fae4a" stroke="#121212" stroke-width="2.5"/>
-      <circle cx="57" cy="57" r="3.5" fill="#8a8a8a" stroke="#121212" stroke-width="2"/>
-      <ellipse cx="60" cy="66" rx="3.5" ry="2.5" fill="#121212"/>
-    </svg>
+    <img class="dog" src="dog.webp" alt="" width="425" height="605">
     <svg class="scene" id="scene" aria-hidden="true"></svg>
 
     <div class="eyes" aria-hidden="true">
@@ -535,11 +517,14 @@
   /* ---------- 毛毛怪 ---------- */
   const scene = document.getElementById('scene');
 
-  // 沿著圓角矩形的外框長出一圈毛
-  const furPath = (x, y, w, h, rt, rb, seed) => {
+  const seeded = seed => {
     let s = seed;
-    const rand = () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
-    const step = 7, pts = [];
+    return () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
+  };
+
+  // 取出圓角矩形外框上的取樣點（含朝外的法線）
+  const outline = (w, h, rt, rb, step) => {
+    const pts = [];
     const line = (x1, y1, x2, y2, nx, ny) => {
       const n = Math.max(1, Math.round(Math.hypot(x2 - x1, y2 - y1) / step));
       for (let k = 0; k < n; k++) pts.push({ x: x1 + (x2 - x1) * k / n, y: y1 + (y2 - y1) * k / n, nx, ny });
@@ -552,24 +537,52 @@
       }
     };
     const P = Math.PI;
-    line(x + rt, y, x + w - rt, y, 0, -1);
-    arc(x + w - rt, y + rt, rt, -P / 2, 0);
-    line(x + w, y + rt, x + w, y + h - rb, 1, 0);
-    arc(x + w - rb, y + h - rb, rb, 0, P / 2);
-    line(x + w - rb, y + h, x + rb, y + h, 0, 1);
-    arc(x + rb, y + h - rb, rb, P / 2, P);
-    line(x, y + h - rb, x, y + rt, -1, 0);
-    arc(x + rt, y + rt, rt, P, P * 1.5);
+    line(rt, 0, w - rt, 0, 0, -1);
+    arc(w - rt, rt, rt, -P / 2, 0);
+    line(w, rt, w, h - rb, 1, 0);
+    arc(w - rb, h - rb, rb, 0, P / 2);
+    line(w - rb, h, rb, h, 0, 1);
+    arc(rb, h - rb, rb, P / 2, P);
+    line(0, h - rb, 0, rt, -1, 0);
+    arc(rt, rt, rt, P, P * 1.5);
+    return pts;
+  };
 
-    let d = '';
-    pts.forEach((p, i) => {
-      const q = pts[(i + 1) % pts.length];
-      const len = 7 + rand() * 9;
-      const tx = (p.x + q.x) / 2 + p.nx * len + (rand() - .5) * 4;
-      const ty = (p.y + q.y) / 2 + p.ny * len + 3;
-      d += `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}L${tx.toFixed(1)} ${ty.toFixed(1)}`;
-    });
-    return d + 'Z';
+  // 身體：底色＋邊緣一根一根的細毛＋身上的筆觸
+  const furBody = (w, h, rt, rb) => {
+    const rand = seeded(42);
+    const f = v => v.toFixed(1);
+    const body = outline(w, h, rt, rb, 6).map((p, i) => `${i ? 'L' : 'M'}${f(p.x)} ${f(p.y)}`).join('') + 'Z';
+
+    let hairs = '';
+    for (const p of outline(w, h, rt, rb, 1.6)) {
+      const len = 5 + rand() * rand() * 20;
+      const a = Math.atan2(p.ny, p.nx) + (rand() - .5) * 1.1;
+      const bx = p.x - p.nx * 3, by = p.y - p.ny * 3;
+      hairs += `M${f(bx)} ${f(by)}L${f(bx + Math.cos(a) * len)} ${f(by + Math.sin(a) * len + 2)}`;
+    }
+
+    const inside = (x, y) => {
+      if (x < 4 || x > w - 4 || y < 4 || y > h - 4) return false;
+      if (y < rt) {
+        const cx = x < rt ? rt : x > w - rt ? w - rt : x;
+        return Math.hypot(x - cx, y - rt) < rt - 4;
+      }
+      return true;
+    };
+    let strokes = '';
+    const count = Math.round(w * h / 90);
+    for (let k = 0; k < count; k++) {
+      const x = rand() * w, y = rand() * h;
+      if (!inside(x, y)) continue;
+      const a = Math.PI / 2 + (x - w / 2) / w * -1.1 + (rand() - .5) * .7;
+      const len = 5 + rand() * 10;
+      strokes += `M${f(x)} ${f(y)}l${f(Math.cos(a) * len)} ${f(Math.sin(a) * len)}`;
+    }
+
+    return `<path d="${hairs}" fill="none" stroke="#121212" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="${body}" fill="#121212"/>
+      <path d="${strokes}" fill="none" stroke="#fff" stroke-opacity=".1" stroke-width="1" stroke-linecap="round"/>`;
   };
 
   const draw = () => {
@@ -590,7 +603,7 @@
         <ellipse cx="${sx - 7}" cy="-32" rx="7" ry="13" fill="#4fb23a" transform="rotate(-28 ${sx - 7} -32)"/>
         <ellipse cx="${sx + 18}" cy="-26" rx="7" ry="14" fill="#4fb23a" transform="rotate(58 ${sx + 18} -26)"/>
       </g>
-      <path d="${furPath(0, 0, w, h, rt, 44, 42)}" fill="#121212"/>`;
+      ${furBody(w, h, rt, 44)}`;
   };
 
   const hop = () => {
