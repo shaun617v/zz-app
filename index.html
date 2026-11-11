@@ -3,349 +3,621 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f2ead8">
-<title>計算機 · Bauhaus</title>
+<meta name="theme-color" content="#b9a58d">
+<title>毛毛怪工程計算機</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #f2ead8;
-    --ink: #161616;
-    --red: #d8321f;
-    --blue: #1d4e9e;
-    --yellow: #f2b90f;
-    --line: 4px;
-    --gap: 12px;
+    --paper: #b9a58d;
+    --ink: #121212;
+    --cream: #f7f2e8;
+    --lilac: #9b9de2;
+    --sky: #a9d3ee;
+    --pink: #f4b4c6;
+    --green: #8fd46c;
+    --red: #e2262f;
+    --key-h: clamp(38px, 5.7vh, 52px);
+    --gap: 8px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html, body { height: 100%; }
+  html, body { min-height: 100%; }
 
   body {
-    font-family: "Jost", "Futura", "Century Gothic", "Avenir Next", "Noto Sans TC", sans-serif;
-    background: var(--paper);
+    font-family: "Baloo 2", "Arial Rounded MT Bold", "Hiragino Maru Gothic ProN", "Noto Sans TC", system-ui, sans-serif;
+    background-color: var(--paper);
+    /* 麻布紋理 */
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(70,50,30,.07) 0 1px, transparent 1px 3px);
     color: var(--ink);
-    display: grid;
-    place-items: center;
-    padding: 24px 16px;
-    overflow: hidden;
-    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 12px 20px;
+    overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* 背景幾何構成 */
-  .bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-  .bg i { position: absolute; display: block; }
-  .bg .circle {
-    width: 46vmin; height: 46vmin; border-radius: 50%;
-    background: var(--red); left: -12vmin; top: -12vmin;
+  /* 淡紫色的雲 */
+  .cloud {
+    position: fixed; z-index: 0; pointer-events: none;
+    background: var(--lilac); border-radius: 50%;
+    width: var(--w); height: calc(var(--w) * .46);
   }
-  .bg .square {
-    width: 34vmin; height: 34vmin;
-    background: var(--blue); right: -8vmin; bottom: -8vmin;
+  .cloud::before, .cloud::after {
+    content: ""; position: absolute; background: inherit; border-radius: 50%;
   }
-  .bg .triangle {
-    width: 0; height: 0;
-    border-left: 16vmin solid transparent;
-    border-right: 16vmin solid transparent;
-    border-bottom: 28vmin solid var(--yellow);
-    right: 8vmin; top: 6vmin; transform: rotate(18deg);
+  .cloud::before { width: 52%; height: 96%; left: 10%; top: -34%; }
+  .cloud::after { width: 44%; height: 80%; right: 12%; top: -20%; }
+
+  /* 畫面底部的黑色水面與草 */
+  .water {
+    position: fixed; z-index: 0; left: 0; right: 0; bottom: 0;
+    height: clamp(54px, 13vh, 140px);
+    background: var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='460' height='96'%3E%3Cg stroke='%23fff' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M12 16h120M210 12h90M360 18h70M60 44h14M120 40h96M300 46h110M20 72h60M150 76h130M340 70h20M400 78h40'/%3E%3C/g%3E%3C/svg%3E") 0 28px;
+    pointer-events: none;
   }
-  .bg .bar {
-    width: 60vmin; height: var(--line);
-    background: var(--ink); left: 4vmin; bottom: 14vmin;
-    transform: rotate(-32deg); transform-origin: left center;
+  .water::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -7px; height: 8px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='8'%3E%3Cpath d='M0 8L2 1L5 8L8 0L11 8L14 2L18 8Z' fill='%23121212'/%3E%3C/svg%3E") repeat-x;
   }
 
-  .calc {
+  /* 站在草地上的小白狗 */
+  .dog {
+    position: fixed; z-index: 0;
+    left: calc(50% - 350px);
+    bottom: calc(clamp(54px, 13vh, 140px) - 2px);
+    height: clamp(110px, 20vh, 170px); width: auto;
+    pointer-events: none;
+    transform-origin: 50% 100%;
+    animation: sway 5s ease-in-out infinite;
+  }
+  @keyframes sway { 0%, 100% { rotate: -2deg; } 50% { rotate: 2deg; } }
+  @media (max-width: 760px) {
+    /* 窄螢幕沒有旁邊的空間，小狗改站到毛毛怪的肩膀上 */
+    .dog { position: absolute; left: auto; right: 0; bottom: auto; top: -56px; height: 80px; }
+  }
+
+  .monster {
     position: relative; z-index: 1;
-    width: min(380px, 100%);
-    background: var(--paper);
-    border: var(--line) solid var(--ink);
-    box-shadow: 14px 14px 0 var(--ink);
-    padding: 20px;
+    width: min(400px, 100%);
+    margin: 72px 0 34px;
+    padding: 76px 20px 24px;
   }
 
-  .brand {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 16px;
+  .scene {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    overflow: visible; pointer-events: none;
   }
-  .brand span { display: block; width: 16px; height: 16px; }
-  .brand .c { background: var(--red); border-radius: 50%; }
-  .brand .s { background: var(--blue); }
-  .brand .t {
-    width: 0; height: 0; background: none;
-    border-left: 9px solid transparent;
-    border-right: 9px solid transparent;
-    border-bottom: 16px solid var(--yellow);
+  .balloon { animation: bob 4s ease-in-out infinite; }
+  .balloon.pop { animation: hop .5s ease-out; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-16px); } }
+
+  .eyes {
+    position: absolute; top: 24px; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 52px;
   }
-  .brand b {
-    margin-left: auto;
-    font-weight: 700; font-size: 13px;
-    letter-spacing: .32em; text-transform: lowercase;
+  .eye {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 4px solid #cbb8a0;
+    display: grid; place-items: center;
+    animation: blink 5.5s infinite;
+    transition: transform .2s ease;
   }
+  .eye i {
+    display: block; width: 13px; height: 13px; border-radius: 50%;
+    background: #fff;
+    transform: translate(var(--px, 0px), var(--py, 0px));
+    transition: transform .08s linear;
+  }
+  .monster.oops .eye { transform: scale(1.3); border-color: var(--pink); }
+  @keyframes blink { 0%, 95%, 100% { scale: 1 1; } 97.5% { scale: 1 .1; } }
+
+  .screen, .keys { position: relative; }
 
   .screen {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 14px 16px 12px;
-    margin-bottom: 16px;
+    border: 3px solid var(--ink);
+    outline: 3px solid var(--cream);
+    border-radius: 26px;
+    padding: 10px 18px 8px;
+    margin-bottom: 14px;
     text-align: right;
-    border-bottom: 10px solid var(--yellow);
+    background-color: #f1c3c9;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='160'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.003' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='1.1 0 0 0 0.34  0 1.0 0 0 0.24  0 0 0.9 0 0.2  0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='420' height='160' filter='url(%23f)'/%3E%3C/svg%3E");
+    background-size: cover;
   }
-  .expr {
-    height: 22px; font-size: 16px; font-weight: 400;
-    letter-spacing: .06em; opacity: .65;
-    white-space: nowrap; overflow: hidden;
+  .sub {
+    height: 24px; line-height: 24px; font-size: 17px; font-weight: 500;
+    white-space: nowrap; overflow: hidden; opacity: .75;
   }
-  .value {
-    height: 64px; line-height: 64px;
-    font-size: 54px; font-weight: 500;
+  .main {
+    height: 56px; line-height: 56px;
+    font-size: 44px; font-weight: 700;
     white-space: nowrap; overflow: hidden;
     font-variant-numeric: tabular-nums;
   }
 
   .keys {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: var(--gap);
   }
 
   button {
-    font: inherit; font-size: 26px; font-weight: 500;
+    font: inherit; font-size: 24px; font-weight: 700; line-height: 1;
+    padding-top: 3px;
     color: var(--ink);
-    background: var(--paper);
-    border: var(--line) solid var(--ink);
-    aspect-ratio: 1;
-    cursor: pointer;
-    user-select: none;
-    touch-action: manipulation;
-    transition: transform .06s ease, box-shadow .06s ease;
-    box-shadow: 4px 4px 0 var(--ink);
+    background: var(--cream);
+    border: 0; border-radius: 999px;
+    height: var(--key-h);
+    cursor: pointer; user-select: none; touch-action: manipulation;
+    transition: transform .07s ease, filter .07s ease;
+    position: relative;
   }
-  button:active, button.pressed {
-    transform: translate(4px, 4px);
-    box-shadow: 0 0 0 var(--ink);
+  button:active, button.pressed { transform: scale(.9); filter: brightness(.9); }
+  button:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+
+  .sci { background: var(--lilac); font-size: 17px; }
+  .par { background: var(--pink); font-size: 20px; }
+  .op { background: var(--sky); font-size: 27px; }
+  .mode { background: #2b2b2b; color: var(--green); font-size: 15px; box-shadow: inset 0 0 0 2px var(--green); }
+  .mode.on { background: var(--green); color: var(--ink); }
+  .eq { background: var(--red); color: #fff; font-size: 28px; }
+  .eq::after {
+    content: ""; position: absolute; left: 16%; top: 16%;
+    width: 22%; height: 26%; border-radius: 50%;
+    border-top: 3px solid rgba(255, 255, 255, .85);
+    transform: rotate(-30deg);
   }
-  button:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
 
-  .fn { background: var(--yellow); }
-  .op { background: var(--blue); color: var(--paper); border-radius: 50%; font-size: 30px; }
-  .op.active { background: var(--paper); color: var(--blue); }
-  .eq { background: var(--red); color: var(--paper); border-radius: 50%; font-size: 30px; }
-  .zero { grid-column: span 2; aspect-ratio: auto; }
-
-  @media (max-height: 640px) {
-    .value { height: 48px; line-height: 48px; }
-    button { aspect-ratio: 1.25; }
-    .zero { aspect-ratio: auto; }
+  @media (max-width: 380px) {
+    .monster { padding-left: 14px; padding-right: 14px; }
+    :root { --gap: 6px; }
+    .sci { font-size: 15px; }
+  }
+  @media (max-height: 700px) {
+    .monster { margin-top: 64px; padding-top: 68px; }
+    .eyes { top: 20px; }
+    .main { height: 46px; line-height: 46px; font-size: 38px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .balloon, .eye, .dog { animation: none; }
   }
 </style>
 </head>
 <body>
-  <div class="bg" aria-hidden="true">
-    <i class="circle"></i><i class="triangle"></i><i class="square"></i><i class="bar"></i>
-  </div>
+  <i class="cloud" style="--w: 240px; left: -60px; top: 16%;"></i>
+  <i class="cloud" style="--w: 130px; left: 14%; top: 62%;"></i>
+  <i class="cloud" style="--w: 200px; right: -40px; top: 8%;"></i>
+  <i class="cloud" style="--w: 280px; right: 4%; bottom: 10%;"></i>
+  <i class="cloud" style="--w: 90px; right: 24%; top: 34%;"></i>
 
-  <main class="calc" aria-label="計算機">
-    <div class="brand" aria-hidden="true">
-      <span class="c"></span><span class="s"></span><span class="t"></span>
-      <b>rechner</b>
+  <i class="water"></i>
+
+  <main class="monster" id="monster" aria-label="工程計算機">
+    <svg class="dog" viewBox="0 0 120 172" aria-hidden="true">
+      <g fill="none" stroke-linecap="round">
+        <g stroke="#121212" stroke-width="21">
+          <path d="M42 94L18 114M78 94L102 112M50 132L40 158M70 132L80 158"/>
+        </g>
+        <g stroke="#fff" stroke-width="14">
+          <path d="M42 94L18 114M78 94L102 112M50 132L40 158M70 132L80 158"/>
+        </g>
+      </g>
+      <g fill="#fff" stroke="#121212" stroke-width="3.5">
+        <ellipse cx="60" cy="108" rx="25" ry="33"/>
+        <ellipse cx="94" cy="54" rx="11" ry="22" transform="rotate(-12 94 54)"/>
+        <path d="M60 8C84 8 96 26 95 46C94 66 80 76 60 76C40 76 26 66 26 46C26 26 38 8 60 8Z"/>
+      </g>
+      <ellipse cx="47" cy="44" rx="4" ry="6.5" fill="#3fae4a" stroke="#121212" stroke-width="2.5"/>
+      <ellipse cx="70" cy="46" rx="4" ry="6.5" fill="#3fae4a" stroke="#121212" stroke-width="2.5"/>
+      <circle cx="57" cy="57" r="3.5" fill="#8a8a8a" stroke="#121212" stroke-width="2"/>
+      <ellipse cx="60" cy="66" rx="3.5" ry="2.5" fill="#121212"/>
+    </svg>
+    <svg class="scene" id="scene" aria-hidden="true"></svg>
+
+    <div class="eyes" aria-hidden="true">
+      <span class="eye"><i></i></span>
+      <span class="eye"><i></i></span>
     </div>
 
     <div class="screen">
-      <div class="expr" id="expr"></div>
-      <div class="value" id="value" role="status" aria-live="polite">0</div>
+      <div class="sub" id="sub"></div>
+      <div class="main" id="main" role="status" aria-live="polite">0</div>
     </div>
 
     <div class="keys" id="keys">
-      <button class="fn" data-act="clear" aria-label="清除">AC</button>
-      <button class="fn" data-act="sign" aria-label="正負號">±</button>
-      <button class="fn" data-act="percent" aria-label="百分比">%</button>
-      <button class="op" data-op="/" aria-label="除">÷</button>
+      <button class="mode" data-act="second" aria-label="第二功能">2nd</button>
+      <button class="mode" data-act="angle" aria-label="角度單位">DEG</button>
+      <button class="par" data-tok="(">(</button>
+      <button class="par" data-tok=")">)</button>
+      <button class="par" data-act="back" aria-label="刪除">⌫</button>
 
-      <button data-num="7">7</button>
-      <button data-num="8">8</button>
-      <button data-num="9">9</button>
-      <button class="op" data-op="*" aria-label="乘">×</button>
+      <button class="sci" data-tok="sin" data-tok2="asin" data-l2="sin⁻¹">sin</button>
+      <button class="sci" data-tok="cos" data-tok2="acos" data-l2="cos⁻¹">cos</button>
+      <button class="sci" data-tok="tan" data-tok2="atan" data-l2="tan⁻¹">tan</button>
+      <button class="sci" data-tok="ln" data-tok2="e ^ (" data-l2="eˣ">ln</button>
+      <button class="sci" data-tok="log" data-tok2="1 0 ^ (" data-l2="10ˣ">log</button>
 
-      <button data-num="4">4</button>
-      <button data-num="5">5</button>
-      <button data-num="6">6</button>
-      <button class="op" data-op="-" aria-label="減">−</button>
+      <button class="sci" data-tok="sq" data-tok2="cu" data-l2="x³">x²</button>
+      <button class="sci" data-tok="sqrt" data-tok2="cbrt" data-l2="∛">√</button>
+      <button class="sci" data-tok="^" data-tok2="inv" data-l2="1/x">xʸ</button>
+      <button class="sci" data-tok="pi">π</button>
+      <button class="sci" data-tok="e">e</button>
 
-      <button data-num="1">1</button>
-      <button data-num="2">2</button>
-      <button data-num="3">3</button>
-      <button class="op" data-op="+" aria-label="加">+</button>
+      <button data-tok="7">7</button>
+      <button data-tok="8">8</button>
+      <button data-tok="9">9</button>
+      <button class="op" data-tok="/" aria-label="除">÷</button>
+      <button class="par" data-act="clear" aria-label="清除">AC</button>
 
-      <button class="zero" data-num="0">0</button>
-      <button data-act="dot" aria-label="小數點">.</button>
+      <button data-tok="4">4</button>
+      <button data-tok="5">5</button>
+      <button data-tok="6">6</button>
+      <button class="op" data-tok="*" aria-label="乘">×</button>
+      <button class="sci" data-tok="!" data-tok2="abs" data-l2="|x|" aria-label="階乘">n!</button>
+
+      <button data-tok="1">1</button>
+      <button data-tok="2">2</button>
+      <button data-tok="3">3</button>
+      <button class="op" data-tok="-" aria-label="減">−</button>
+      <button class="sci" data-tok="%" aria-label="百分比">%</button>
+
+      <button data-tok="0">0</button>
+      <button data-tok="." aria-label="小數點">.</button>
+      <button class="sci" data-tok="ans" aria-label="上次答案">Ans</button>
+      <button class="op" data-tok="+" aria-label="加">+</button>
       <button class="eq" data-act="equals" aria-label="等於">=</button>
     </div>
   </main>
 
 <script>
 (() => {
-  const MAX_DIGITS = 12;
-  const SYMBOL = { '+': '+', '-': '−', '*': '×', '/': '÷' };
-  const valueEl = document.getElementById('value');
-  const exprEl = document.getElementById('expr');
-  const keysEl = document.getElementById('keys');
+  /* ---------- 運算核心 ---------- */
+  const SHOW = {
+    '*': '×', '/': '÷', '-': '−', sq: '²', cu: '³', inv: '⁻¹', pi: 'π', ans: 'Ans',
+    sin: 'sin(', cos: 'cos(', tan: 'tan(', asin: 'sin⁻¹(', acos: 'cos⁻¹(', atan: 'tan⁻¹(',
+    ln: 'ln(', log: 'log(', sqrt: '√(', cbrt: '∛(', abs: 'abs('
+  };
+  const CONTINUES = new Set(['+', '-', '*', '/', '^', '!', '%', 'sq', 'cu', 'inv']);
+  const MAX_TOKENS = 80;
 
-  let cur = '0';      // 目前輸入中的數字（字串）
-  let prev = null;    // 前一個運算元
-  let op = null;      // 等待中的運算子
-  let fresh = true;   // 下一個數字鍵是否開始新輸入
+  let tokens = [];
+  let ans = 0;
+  let degrees = true;
+  let second = false;
+  let done = false;      // 剛按過等號
   let error = false;
-  let exprText = '';
+  let lastExpr = '';
+  let resultStr = '0';
 
-  const compute = (a, b, o) => {
-    switch (o) {
-      case '+': return a + b;
-      case '-': return a - b;
-      case '*': return a * b;
-      case '/': return b === 0 ? NaN : a / b;
-    }
+  const fail = () => { throw new Error('math'); };
+  const near0 = v => Math.abs(v) < 1e-13 ? 0 : v;
+  const toRad = x => degrees ? x * Math.PI / 180 : x;
+  const fromRad = x => degrees ? x * 180 / Math.PI : x;
+
+  const FUNCS = {
+    sin: x => near0(Math.sin(toRad(x))),
+    cos: x => near0(Math.cos(toRad(x))),
+    tan: x => { const r = toRad(x); if (Math.abs(Math.cos(r)) < 1e-13) fail(); return near0(Math.tan(r)); },
+    asin: x => fromRad(Math.asin(x)),
+    acos: x => fromRad(Math.acos(x)),
+    atan: x => fromRad(Math.atan(x)),
+    ln: x => x > 0 ? Math.log(x) : fail(),
+    log: x => x > 0 ? Math.log10(x) : fail(),
+    sqrt: x => x >= 0 ? Math.sqrt(x) : fail(),
+    cbrt: Math.cbrt,
+    abs: Math.abs
   };
 
-  // 消除浮點誤差（例如 0.1 + 0.2）
-  const tidy = n => Number.isFinite(n) ? parseFloat(n.toPrecision(MAX_DIGITS)) : n;
+  const factorial = n => {
+    if (n < 0 || n > 170 || !Number.isInteger(n)) fail();
+    let r = 1;
+    for (let k = 2; k <= n; k++) r *= k;
+    return r;
+  };
+
+  const evaluate = list => {
+    const lex = [];
+    let buf = '';
+    const flush = () => {
+      if (!buf) return;
+      if (buf === '.') fail();
+      lex.push({ n: parseFloat(buf) });
+      buf = '';
+    };
+    for (const t of list) {
+      if (/^[\d.]$/.test(t)) buf += t; else { flush(); lex.push({ t }); }
+    }
+    flush();
+
+    let i = 0;
+    const is = t => i < lex.length && lex[i].t === t;
+    const startsValue = () => {
+      const x = lex[i];
+      return x && (x.n !== undefined || x.t === '(' || x.t === 'pi' || x.t === 'e' || x.t === 'ans' || x.t in FUNCS);
+    };
+    const closeParen = () => { if (is(')')) i++; else if (i < lex.length) fail(); };
+
+    const expr = () => {
+      let v = term();
+      while (is('+') || is('-')) { const o = lex[i++].t; const r = term(); v = o === '+' ? v + r : v - r; }
+      return v;
+    };
+    const term = () => {
+      let v = unary();
+      for (;;) {
+        if (is('*')) { i++; v *= unary(); }
+        else if (is('/')) { i++; const d = unary(); if (d === 0) fail(); v /= d; }
+        else if (startsValue()) v *= power();          // 省略乘號：2π、3(4+5)
+        else return v;
+      }
+    };
+    const unary = () => {
+      if (is('-')) { i++; return -unary(); }
+      if (is('+')) { i++; return unary(); }
+      return power();
+    };
+    const power = () => {
+      const b = postfix();
+      if (is('^')) { i++; return Math.pow(b, unary()); }
+      return b;
+    };
+    const postfix = () => {
+      let v = primary();
+      for (;;) {
+        if (is('!')) { i++; v = factorial(v); }
+        else if (is('sq')) { i++; v *= v; }
+        else if (is('cu')) { i++; v = v * v * v; }
+        else if (is('inv')) { i++; if (v === 0) fail(); v = 1 / v; }
+        else if (is('%')) { i++; v /= 100; }
+        else return v;
+      }
+    };
+    const primary = () => {
+      const x = lex[i++];
+      if (!x) fail();
+      if (x.n !== undefined) return x.n;
+      if (x.t === 'pi') return Math.PI;
+      if (x.t === 'e') return Math.E;
+      if (x.t === 'ans') return ans;
+      if (x.t === '(') { const v = expr(); closeParen(); return v; }
+      if (x.t in FUNCS) { const v = expr(); closeParen(); return FUNCS[x.t](v); }
+      fail();
+    };
+
+    const v = expr();
+    if (i < lex.length || !Number.isFinite(v)) fail();
+    return parseFloat(v.toPrecision(12));
+  };
 
   const toStr = n => {
     const abs = Math.abs(n);
     if (abs !== 0 && (abs >= 1e12 || abs < 1e-9)) {
-      return n.toExponential(6).replace(/\.?0+e/, 'e').replace('e+', 'e');
+      return n.toExponential(8).replace(/\.?0+e/, 'e').replace('e+', 'e');
     }
     return String(n);
   };
 
   const pretty = s => {
-    if (s.includes('e')) return s;
+    if (s.includes('e')) return s.replace('-', '−').replace('e−', 'e-');
     const neg = s.startsWith('-');
     const [int, dec] = s.replace('-', '').split('.');
-    const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    return (neg ? '−' : '') + grouped + (dec !== undefined ? '.' + dec : '');
+    return (neg ? '−' : '') + int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (dec !== undefined ? '.' + dec : '');
   };
 
-  const render = () => {
-    const text = error ? '錯誤' : pretty(cur);
-    valueEl.textContent = text;
-    exprEl.textContent = exprText;
-    // 數字太長時自動縮小字級
-    valueEl.style.fontSize = '';
-    const base = parseFloat(getComputedStyle(valueEl).fontSize);
-    const ratio = valueEl.clientWidth / valueEl.scrollWidth;
-    if (ratio < 1) valueEl.style.fontSize = Math.floor(base * ratio) + 'px';
-    keysEl.querySelectorAll('.op').forEach(b =>
-      b.classList.toggle('active', !error && fresh && op === b.dataset.op));
-  };
+  const exprText = list => list.map(t => SHOW[t] || t).join('');
 
-  const reset = () => { cur = '0'; prev = null; op = null; fresh = true; error = false; exprText = ''; };
-
-  const fail = () => { reset(); error = true; };
-
-  const inputNum = d => {
-    if (error) reset();
-    if (fresh) {
-      if (op === null) { prev = null; exprText = ''; }
-      cur = d; fresh = false; return;
+  /* ---------- 輸入 ---------- */
+  const push = tok => {
+    if (error) error = false;
+    if (done) { tokens = CONTINUES.has(tok) ? ['ans'] : []; done = false; }
+    if (tokens.length >= MAX_TOKENS) return;
+    if (tok === '.') {
+      let k = tokens.length, run = '';
+      while (k > 0 && /^[\d.]$/.test(tokens[k - 1])) run = tokens[--k] + run;
+      if (run.includes('.')) return;
+      if (run === '') tokens.push('0');
     }
-    if (cur.replace(/[-.]/g, '').length >= MAX_DIGITS) return;
-    cur = cur === '0' ? d : cur === '-0' ? '-' + d : cur + d;
-  };
-
-  const inputDot = () => {
-    if (error) reset();
-    if (fresh) {
-      if (op === null) { prev = null; exprText = ''; }
-      cur = '0.'; fresh = false; return;
-    }
-    if (!cur.includes('.')) cur += '.';
-  };
-
-  const inputOp = o => {
-    if (error) return;
-    if (op !== null && !fresh) {
-      const r = tidy(compute(prev, parseFloat(cur), op));
-      if (!Number.isFinite(r)) return fail();
-      prev = r; cur = toStr(r);
-    } else {
-      prev = parseFloat(cur);
-    }
-    op = o; fresh = true;
-    exprText = pretty(toStr(prev)) + ' ' + SYMBOL[o];
+    tokens.push(tok);
   };
 
   const equals = () => {
-    if (error) return;
-    if (op === null) { cur = toStr(parseFloat(cur)); fresh = true; return; }
-    const b = parseFloat(cur);
-    const r = tidy(compute(prev, b, op));
-    exprText = `${pretty(toStr(prev))} ${SYMBOL[op]} ${pretty(toStr(b))} =`;
-    if (!Number.isFinite(r)) { fail(); return; }
-    cur = toStr(r); prev = null; op = null; fresh = true;
+    if (done || !tokens.length) return;
+    error = false;
+    try {
+      const v = evaluate(tokens);
+      lastExpr = exprText(tokens);
+      resultStr = toStr(v);
+      ans = v;
+      done = true;
+      hop();
+    } catch { error = true; }
   };
 
-  const sign = () => {
-    if (error) return;
-    cur = cur.startsWith('-') ? cur.slice(1) : '-' + cur;
-    if (parseFloat(cur) === 0 && fresh) cur = '0';
+  const back = () => {
+    if (error) { error = false; return; }
+    if (done) { tokens = []; done = false; return; }
+    tokens.pop();
   };
 
-  const percent = () => {
-    if (error) return;
-    cur = toStr(tidy(parseFloat(cur) / 100));
-    fresh = op === null;
-    if (fresh) exprText = '';
+  const clear = () => { tokens = []; done = false; error = false; };
+
+  /* ---------- 畫面 ---------- */
+  const mainEl = document.getElementById('main');
+  const subEl = document.getElementById('sub');
+  const keysEl = document.getElementById('keys');
+  const monster = document.getElementById('monster');
+
+  const render = () => {
+    let big, small = '';
+    if (error) { big = '錯誤'; small = exprText(tokens); }
+    else if (done) { big = pretty(resultStr); small = lastExpr + ' ='; }
+    else {
+      big = tokens.length ? exprText(tokens) : '0';
+      if (tokens.length > 1) {
+        try { small = '= ' + pretty(toStr(evaluate(tokens))); } catch { /* 算式還沒打完 */ }
+      }
+    }
+    mainEl.textContent = big;
+    subEl.textContent = small;
+    subEl.scrollLeft = subEl.scrollWidth;
+    monster.classList.toggle('oops', error);
+
+    // 太長就縮小字級，再不夠就靠右顯示尾端
+    mainEl.style.fontSize = '';
+    const base = parseFloat(getComputedStyle(mainEl).fontSize);
+    const ratio = mainEl.clientWidth / mainEl.scrollWidth;
+    if (ratio < 1) mainEl.style.fontSize = Math.max(20, Math.floor(base * ratio)) + 'px';
+    mainEl.scrollLeft = mainEl.scrollWidth;
   };
 
-  const backspace = () => {
-    if (error) { reset(); return; }
-    if (fresh) return;
-    cur = cur.slice(0, -1);
-    if (cur === '' || cur === '-') cur = '0';
+  const setSecond = on => {
+    second = on;
+    keysEl.querySelector('[data-act="second"]').classList.toggle('on', on);
+    keysEl.querySelectorAll('[data-tok2]').forEach(b => {
+      b.dataset.l1 = b.dataset.l1 || b.textContent;
+      b.textContent = on ? b.dataset.l2 : b.dataset.l1;
+    });
   };
 
-  const actions = { clear: reset, sign, percent, dot: inputDot, equals };
+  const actions = {
+    equals, back, clear,
+    second: () => setSecond(!second),
+    angle: () => {
+      degrees = !degrees;
+      keysEl.querySelector('[data-act="angle"]').textContent = degrees ? 'DEG' : 'RAD';
+    }
+  };
 
   keysEl.addEventListener('click', e => {
     const b = e.target.closest('button');
     if (!b) return;
-    if (b.dataset.num !== undefined) inputNum(b.dataset.num);
-    else if (b.dataset.op) inputOp(b.dataset.op);
-    else actions[b.dataset.act]();
+    if (b.dataset.act) actions[b.dataset.act]();
+    else {
+      const useSecond = second && b.dataset.tok2;
+      (useSecond ? b.dataset.tok2 : b.dataset.tok).split(' ').forEach(push);
+      if (second) setSecond(false);
+    }
     render();
   });
 
-  const flash = selector => {
-    const b = keysEl.querySelector(selector);
-    if (!b) return;
-    b.classList.add('pressed');
-    setTimeout(() => b.classList.remove('pressed'), 90);
+  const KEYMAP = {
+    Enter: '[data-act="equals"]', '=': '[data-act="equals"]',
+    Backspace: '[data-act="back"]', Escape: '[data-act="clear"]', Delete: '[data-act="clear"]',
+    x: '[data-tok="*"]', X: '[data-tok="*"]', ',': '[data-tok="."]',
+    s: '[data-tok="sin"]', c: '[data-tok="cos"]', t: '[data-tok="tan"]',
+    l: '[data-tok="ln"]', g: '[data-tok="log"]', r: '[data-tok="sqrt"]',
+    p: '[data-tok="pi"]', e: '[data-tok="e"]', a: '[data-tok="ans"]'
   };
 
   document.addEventListener('keydown', e => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const k = e.key;
-    if (/^\d$/.test(k)) { inputNum(k); flash(`[data-num="${k}"]`); }
-    else if (k === '.' || k === ',') { inputDot(); flash('[data-act="dot"]'); }
-    else if ('+-*/'.includes(k)) { inputOp(k); flash(`[data-op="${k}"]`); }
-    else if (k === 'x' || k === 'X') { inputOp('*'); flash('[data-op="*"]'); }
-    else if (k === 'Enter' || k === '=') { equals(); flash('[data-act="equals"]'); }
-    else if (k === '%') { percent(); flash('[data-act="percent"]'); }
-    else if (k === 'Escape' || k === 'Delete' || k === 'c' || k === 'C') { reset(); flash('[data-act="clear"]'); }
-    else if (k === 'Backspace') backspace();
-    else return;
+    const sel = KEYMAP[k] || (/^[\d.+\-*/^()!%]$/.test(k) ? `[data-tok="${k}"]` : null);
+    const b = sel && keysEl.querySelector(sel);
+    if (!b) return;
     e.preventDefault();
-    render();
+    if (second) setSecond(false);
+    b.classList.add('pressed');
+    setTimeout(() => b.classList.remove('pressed'), 90);
+    b.click();
   });
 
-  window.addEventListener('resize', render);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
-  render();
+  /* ---------- 毛毛怪 ---------- */
+  const scene = document.getElementById('scene');
+
+  // 沿著圓角矩形的外框長出一圈毛
+  const furPath = (x, y, w, h, rt, rb, seed) => {
+    let s = seed;
+    const rand = () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
+    const step = 7, pts = [];
+    const line = (x1, y1, x2, y2, nx, ny) => {
+      const n = Math.max(1, Math.round(Math.hypot(x2 - x1, y2 - y1) / step));
+      for (let k = 0; k < n; k++) pts.push({ x: x1 + (x2 - x1) * k / n, y: y1 + (y2 - y1) * k / n, nx, ny });
+    };
+    const arc = (cx, cy, r, a0, a1) => {
+      const n = Math.max(1, Math.round(Math.abs(a1 - a0) * r / step));
+      for (let k = 0; k < n; k++) {
+        const a = a0 + (a1 - a0) * k / n;
+        pts.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), nx: Math.cos(a), ny: Math.sin(a) });
+      }
+    };
+    const P = Math.PI;
+    line(x + rt, y, x + w - rt, y, 0, -1);
+    arc(x + w - rt, y + rt, rt, -P / 2, 0);
+    line(x + w, y + rt, x + w, y + h - rb, 1, 0);
+    arc(x + w - rb, y + h - rb, rb, 0, P / 2);
+    line(x + w - rb, y + h, x + rb, y + h, 0, 1);
+    arc(x + rb, y + h - rb, rb, P / 2, P);
+    line(x, y + h - rb, x, y + rt, -1, 0);
+    arc(x + rt, y + rt, rt, P, P * 1.5);
+
+    let d = '';
+    pts.forEach((p, i) => {
+      const q = pts[(i + 1) % pts.length];
+      const len = 7 + rand() * 9;
+      const tx = (p.x + q.x) / 2 + p.nx * len + (rand() - .5) * 4;
+      const ty = (p.y + q.y) / 2 + p.ny * len + 3;
+      d += `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}L${tx.toFixed(1)} ${ty.toFixed(1)}`;
+    });
+    return d + 'Z';
+  };
+
+  const draw = () => {
+    const w = monster.clientWidth, h = monster.clientHeight;
+    const rt = Math.min(120, w / 2 - 6);
+    const bx = 14, by = -36;                    // 氣球中心
+    const sx = w * 0.64;                        // 頭頂小芽
+    scene.innerHTML = `
+      <g class="balloon" id="balloon">
+        <path d="M${bx} ${by + 30} C${bx - 14} ${by + 70}, ${bx + 22} ${by + 110}, ${bx + 2} ${by + 150} S${bx + 6} ${by + 210}, ${bx + 16} ${by + 236}"
+              fill="none" stroke="#121212" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M${bx - 5} ${by + 33} L${bx} ${by + 26} L${bx + 5} ${by + 33} Z" fill="#e2262f" stroke="#121212" stroke-width="2.5" stroke-linejoin="round"/>
+        <ellipse cx="${bx}" cy="${by}" rx="24" ry="28" fill="#e2262f" stroke="#121212" stroke-width="3"/>
+        <path d="M${bx - 13} ${by - 8} Q${bx - 11} ${by - 18} ${bx - 3} ${by - 20}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <g>
+        <path d="M${sx} 6 Q${sx - 1} -10 ${sx + 4} -22" fill="none" stroke="#4fb23a" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="${sx - 7}" cy="-32" rx="7" ry="13" fill="#4fb23a" transform="rotate(-28 ${sx - 7} -32)"/>
+        <ellipse cx="${sx + 18}" cy="-26" rx="7" ry="14" fill="#4fb23a" transform="rotate(58 ${sx + 18} -26)"/>
+      </g>
+      <path d="${furPath(0, 0, w, h, rt, 44, 42)}" fill="#121212"/>`;
+  };
+
+  const hop = () => {
+    const b = document.getElementById('balloon');
+    if (!b) return;
+    b.classList.remove('pop');
+    void b.getBoundingClientRect();
+    b.classList.add('pop');
+    setTimeout(() => b.classList.remove('pop'), 520);
+  };
+
+  // 眼睛跟著游標或手指看
+  const eyes = [...document.querySelectorAll('.eye')];
+  document.addEventListener('pointermove', e => {
+    eyes.forEach(eye => {
+      const r = eye.getBoundingClientRect();
+      const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+      const d = Math.hypot(dx, dy) || 1, m = Math.min(6, d / 14);
+      eye.firstElementChild.style.setProperty('--px', (dx / d * m).toFixed(1) + 'px');
+      eye.firstElementChild.style.setProperty('--py', (dy / d * m).toFixed(1) + 'px');
+    });
+  });
+
+  const refresh = () => { draw(); render(); };
+  window.addEventListener('resize', refresh);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
+  refresh();
 })();
 </script>
 </body>
