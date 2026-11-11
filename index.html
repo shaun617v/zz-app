@@ -18,7 +18,7 @@
     --pink: #f4b4c6;
     --green: #8fd46c;
     --red: #e2262f;
-    --key-h: clamp(38px, 5.7vh, 52px);
+    --key-h: clamp(46px, 7.4vh, 62px);
     --gap: 8px;
   }
 
@@ -35,8 +35,11 @@
       repeating-linear-gradient(90deg, rgba(70,50,30,.07) 0 1px, transparent 1px 3px);
     color: var(--ink);
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+    align-content: center;
+    gap: 28px 64px;
     min-height: 100vh;
     min-height: 100dvh;
     padding: 12px 20px;
@@ -68,21 +71,15 @@
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='8'%3E%3Cpath d='M0 8L2 1L5 8L8 0L11 8L14 2L18 8Z' fill='%23121212'/%3E%3C/svg%3E") repeat-x;
   }
 
-  /* 站在草地上的小白狗 */
+  /* 站在毛毛怪肩膀上的小白狗 */
   .dog {
-    position: fixed; z-index: 0;
-    left: calc(50% - 400px);
-    bottom: calc(clamp(54px, 13vh, 140px) - 2px);
-    height: clamp(150px, 27vh, 240px); width: auto;
+    position: absolute; right: 0; top: -62px;
+    height: 88px; width: auto;
     pointer-events: none;
     transform-origin: 50% 100%;
     animation: sway 5s ease-in-out infinite;
   }
   @keyframes sway { 0%, 100% { rotate: -2deg; } 50% { rotate: 2deg; } }
-  @media (max-width: 760px) {
-    /* 窄螢幕沒有旁邊的空間，小狗改站到毛毛怪的肩膀上 */
-    .dog { position: absolute; left: auto; right: 0; bottom: auto; top: -62px; height: 88px; }
-  }
 
   .monster {
     position: relative; z-index: 1;
@@ -147,7 +144,7 @@
 
   .keys {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--gap);
   }
 
@@ -171,11 +168,53 @@
   .mode { background: #2b2b2b; color: var(--green); font-size: 15px; box-shadow: inset 0 0 0 2px var(--green); }
   .mode.on { background: var(--green); color: var(--ink); }
   .eq { background: var(--red); color: #fff; font-size: 28px; }
+  .zero { grid-column: span 2; }
   .eq::after {
     content: ""; position: absolute; left: 16%; top: 16%;
     width: 22%; height: 26%; border-radius: 50%;
     border-top: 3px solid rgba(255, 255, 255, .85);
     transform: rotate(-30deg);
+  }
+
+  /* ---------- 小遊戲 ---------- */
+  .game {
+    position: relative; z-index: 1;
+    width: min(360px, 100%);
+    margin-bottom: 34px;
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    border-radius: 30px;
+    padding: 14px 14px 16px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .game-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 0 6px 8px; font-size: 16px; font-weight: 500;
+  }
+  .game-head b { font-size: 22px; font-weight: 700; }
+  .game-head #lives { color: var(--red); letter-spacing: 2px; }
+  .stage { position: relative; }
+  .stage canvas {
+    display: block; width: 100%; height: auto; aspect-ratio: 360 / 440;
+    border: 3px solid var(--ink); border-radius: 22px;
+    touch-action: none; cursor: grab;
+    background-color: #f1c3c9;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='440'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.03' numOctaves='3' seed='5'/%3E%3CfeColorMatrix values='1.0 0 0 0 0.34  0 0.9 0 0 0.26  0 0 0.9 0 0.26  0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='360' height='440' filter='url(%23f)'/%3E%3C/svg%3E");
+    background-size: cover;
+  }
+  .overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    text-align: center; padding: 20px;
+  }
+  .overlay[hidden] { display: none; }
+  .overlay p {
+    background: var(--cream); border: 3px solid var(--ink); border-radius: 18px;
+    padding: 8px 14px; font-size: 16px; font-weight: 500; line-height: 1.5;
+  }
+  .overlay button {
+    height: auto; padding: 12px 28px 9px; font-size: 22px;
+    background: var(--red); color: #fff; border: 3px solid var(--ink);
   }
 
   @media (max-width: 380px) {
@@ -217,96 +256,64 @@
     </div>
 
     <div class="keys" id="keys">
-      <button class="mode" data-act="second" aria-label="第二功能">2nd</button>
-      <button class="mode" data-act="angle" aria-label="角度單位">DEG</button>
-      <button class="par" data-tok="(">(</button>
-      <button class="par" data-tok=")">)</button>
+      <button class="par" data-act="clear" aria-label="清除">AC</button>
       <button class="par" data-act="back" aria-label="刪除">⌫</button>
-
-      <button class="sci" data-tok="sin" data-tok2="asin" data-l2="sin⁻¹">sin</button>
-      <button class="sci" data-tok="cos" data-tok2="acos" data-l2="cos⁻¹">cos</button>
-      <button class="sci" data-tok="tan" data-tok2="atan" data-l2="tan⁻¹">tan</button>
-      <button class="sci" data-tok="ln" data-tok2="e ^ (" data-l2="eˣ">ln</button>
-      <button class="sci" data-tok="log" data-tok2="1 0 ^ (" data-l2="10ˣ">log</button>
-
-      <button class="sci" data-tok="sq" data-tok2="cu" data-l2="x³">x²</button>
-      <button class="sci" data-tok="sqrt" data-tok2="cbrt" data-l2="∛">√</button>
-      <button class="sci" data-tok="^" data-tok2="inv" data-l2="1/x">xʸ</button>
-      <button class="sci" data-tok="pi">π</button>
-      <button class="sci" data-tok="e">e</button>
+      <button class="sci" data-tok="%" aria-label="百分比">%</button>
+      <button class="op" data-tok="/" aria-label="除">÷</button>
 
       <button data-tok="7">7</button>
       <button data-tok="8">8</button>
       <button data-tok="9">9</button>
-      <button class="op" data-tok="/" aria-label="除">÷</button>
-      <button class="par" data-act="clear" aria-label="清除">AC</button>
+      <button class="op" data-tok="*" aria-label="乘">×</button>
 
       <button data-tok="4">4</button>
       <button data-tok="5">5</button>
       <button data-tok="6">6</button>
-      <button class="op" data-tok="*" aria-label="乘">×</button>
-      <button class="sci" data-tok="!" data-tok2="abs" data-l2="|x|" aria-label="階乘">n!</button>
+      <button class="op" data-tok="-" aria-label="減">−</button>
 
       <button data-tok="1">1</button>
       <button data-tok="2">2</button>
       <button data-tok="3">3</button>
-      <button class="op" data-tok="-" aria-label="減">−</button>
-      <button class="sci" data-tok="%" aria-label="百分比">%</button>
-
-      <button data-tok="0">0</button>
-      <button data-tok="." aria-label="小數點">.</button>
-      <button class="sci" data-tok="ans" aria-label="上次答案">Ans</button>
       <button class="op" data-tok="+" aria-label="加">+</button>
+
+      <button class="zero" data-tok="0">0</button>
+      <button data-tok="." aria-label="小數點">.</button>
       <button class="eq" data-act="equals" aria-label="等於">=</button>
     </div>
   </main>
 
+  <section class="game" aria-label="接氣球小遊戲">
+    <div class="game-head">
+      <b>接氣球</b>
+      <span>分數 <span id="score">0</span>・最高 <span id="best">0</span></span>
+      <span id="lives" aria-label="剩餘生命">♥♥♥</span>
+    </div>
+    <div class="stage">
+      <canvas id="game" width="360" height="440"></canvas>
+      <div class="overlay" id="overlay">
+        <p id="msg">移動小狗接住紅氣球，<br>躲開黑色毛球！<br>滑鼠、手指或 ← → 鍵操作</p>
+        <button id="start" type="button">開始</button>
+      </div>
+    </div>
+  </section>
+
 <script>
 (() => {
   /* ---------- 運算核心 ---------- */
-  const SHOW = {
-    '*': '×', '/': '÷', '-': '−', sq: '²', cu: '³', inv: '⁻¹', pi: 'π', ans: 'Ans',
-    sin: 'sin(', cos: 'cos(', tan: 'tan(', asin: 'sin⁻¹(', acos: 'cos⁻¹(', atan: 'tan⁻¹(',
-    ln: 'ln(', log: 'log(', sqrt: '√(', cbrt: '∛(', abs: 'abs('
-  };
-  const CONTINUES = new Set(['+', '-', '*', '/', '^', '!', '%', 'sq', 'cu', 'inv']);
-  const MAX_TOKENS = 80;
+  const SHOW = { '*': '×', '/': '÷', '-': '−', ans: 'Ans' };
+  const CONTINUES = new Set(['+', '-', '*', '/', '%']);
+  const MAX_TOKENS = 40;
 
   let tokens = [];
   let ans = 0;
-  let degrees = true;
-  let second = false;
   let done = false;      // 剛按過等號
   let error = false;
   let lastExpr = '';
   let resultStr = '0';
 
   const fail = () => { throw new Error('math'); };
-  const near0 = v => Math.abs(v) < 1e-13 ? 0 : v;
-  const toRad = x => degrees ? x * Math.PI / 180 : x;
-  const fromRad = x => degrees ? x * 180 / Math.PI : x;
 
-  const FUNCS = {
-    sin: x => near0(Math.sin(toRad(x))),
-    cos: x => near0(Math.cos(toRad(x))),
-    tan: x => { const r = toRad(x); if (Math.abs(Math.cos(r)) < 1e-13) fail(); return near0(Math.tan(r)); },
-    asin: x => fromRad(Math.asin(x)),
-    acos: x => fromRad(Math.acos(x)),
-    atan: x => fromRad(Math.atan(x)),
-    ln: x => x > 0 ? Math.log(x) : fail(),
-    log: x => x > 0 ? Math.log10(x) : fail(),
-    sqrt: x => x >= 0 ? Math.sqrt(x) : fail(),
-    cbrt: Math.cbrt,
-    abs: Math.abs
-  };
-
-  const factorial = n => {
-    if (n < 0 || n > 170 || !Number.isInteger(n)) fail();
-    let r = 1;
-    for (let k = 2; k <= n; k++) r *= k;
-    return r;
-  };
-
+  // 先乘除後加減；% 代表除以 100
   const evaluate = list => {
     const lex = [];
     let buf = '';
@@ -323,60 +330,28 @@
 
     let i = 0;
     const is = t => i < lex.length && lex[i].t === t;
-    const startsValue = () => {
-      const x = lex[i];
-      return x && (x.n !== undefined || x.t === '(' || x.t === 'pi' || x.t === 'e' || x.t === 'ans' || x.t in FUNCS);
-    };
-    const closeParen = () => { if (is(')')) i++; else if (i < lex.length) fail(); };
-
-    const expr = () => {
-      let v = term();
-      while (is('+') || is('-')) { const o = lex[i++].t; const r = term(); v = o === '+' ? v + r : v - r; }
+    const value = () => {
+      const x = lex[i++];
+      if (!x) fail();
+      let v = x.n !== undefined ? x.n : x.t === 'ans' ? ans : fail();
+      while (is('%')) { i++; v /= 100; }
       return v;
+    };
+    const unary = () => {
+      if (is('-')) { i++; return -unary(); }
+      if (is('+')) { i++; return unary(); }
+      return value();
     };
     const term = () => {
       let v = unary();
       for (;;) {
         if (is('*')) { i++; v *= unary(); }
         else if (is('/')) { i++; const d = unary(); if (d === 0) fail(); v /= d; }
-        else if (startsValue()) v *= power();          // 省略乘號：2π、3(4+5)
         else return v;
       }
     };
-    const unary = () => {
-      if (is('-')) { i++; return -unary(); }
-      if (is('+')) { i++; return unary(); }
-      return power();
-    };
-    const power = () => {
-      const b = postfix();
-      if (is('^')) { i++; return Math.pow(b, unary()); }
-      return b;
-    };
-    const postfix = () => {
-      let v = primary();
-      for (;;) {
-        if (is('!')) { i++; v = factorial(v); }
-        else if (is('sq')) { i++; v *= v; }
-        else if (is('cu')) { i++; v = v * v * v; }
-        else if (is('inv')) { i++; if (v === 0) fail(); v = 1 / v; }
-        else if (is('%')) { i++; v /= 100; }
-        else return v;
-      }
-    };
-    const primary = () => {
-      const x = lex[i++];
-      if (!x) fail();
-      if (x.n !== undefined) return x.n;
-      if (x.t === 'pi') return Math.PI;
-      if (x.t === 'e') return Math.E;
-      if (x.t === 'ans') return ans;
-      if (x.t === '(') { const v = expr(); closeParen(); return v; }
-      if (x.t in FUNCS) { const v = expr(); closeParen(); return FUNCS[x.t](v); }
-      fail();
-    };
-
-    const v = expr();
+    let v = term();
+    while (is('+') || is('-')) { const o = lex[i++].t; const r = term(); v = o === '+' ? v + r : v - r; }
     if (i < lex.length || !Number.isFinite(v)) fail();
     return parseFloat(v.toPrecision(12));
   };
@@ -462,53 +437,28 @@
     mainEl.scrollLeft = mainEl.scrollWidth;
   };
 
-  const setSecond = on => {
-    second = on;
-    keysEl.querySelector('[data-act="second"]').classList.toggle('on', on);
-    keysEl.querySelectorAll('[data-tok2]').forEach(b => {
-      b.dataset.l1 = b.dataset.l1 || b.textContent;
-      b.textContent = on ? b.dataset.l2 : b.dataset.l1;
-    });
-  };
-
-  const actions = {
-    equals, back, clear,
-    second: () => setSecond(!second),
-    angle: () => {
-      degrees = !degrees;
-      keysEl.querySelector('[data-act="angle"]').textContent = degrees ? 'DEG' : 'RAD';
-    }
-  };
+  const actions = { equals, back, clear };
 
   keysEl.addEventListener('click', e => {
     const b = e.target.closest('button');
     if (!b) return;
-    if (b.dataset.act) actions[b.dataset.act]();
-    else {
-      const useSecond = second && b.dataset.tok2;
-      (useSecond ? b.dataset.tok2 : b.dataset.tok).split(' ').forEach(push);
-      if (second) setSecond(false);
-    }
+    if (b.dataset.act) actions[b.dataset.act](); else push(b.dataset.tok);
     render();
   });
 
   const KEYMAP = {
     Enter: '[data-act="equals"]', '=': '[data-act="equals"]',
     Backspace: '[data-act="back"]', Escape: '[data-act="clear"]', Delete: '[data-act="clear"]',
-    x: '[data-tok="*"]', X: '[data-tok="*"]', ',': '[data-tok="."]',
-    s: '[data-tok="sin"]', c: '[data-tok="cos"]', t: '[data-tok="tan"]',
-    l: '[data-tok="ln"]', g: '[data-tok="log"]', r: '[data-tok="sqrt"]',
-    p: '[data-tok="pi"]', e: '[data-tok="e"]', a: '[data-tok="ans"]'
+    x: '[data-tok="*"]', X: '[data-tok="*"]', ',': '[data-tok="."]'
   };
 
   document.addEventListener('keydown', e => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const k = e.key;
-    const sel = KEYMAP[k] || (/^[\d.+\-*/^()!%]$/.test(k) ? `[data-tok="${k}"]` : null);
+    const sel = KEYMAP[k] || (/^[\d.+\-*/%]$/.test(k) ? `[data-tok="${k}"]` : null);
     const b = sel && keysEl.querySelector(sel);
     if (!b) return;
     e.preventDefault();
-    if (second) setSecond(false);
     b.classList.add('pressed');
     setTimeout(() => b.classList.remove('pressed'), 90);
     b.click();
@@ -631,6 +581,153 @@
   window.addEventListener('resize', refresh);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
   refresh();
+
+  /* ---------- 接氣球小遊戲 ---------- */
+  const cv = document.getElementById('game');
+  const ctx = cv.getContext('2d');
+  const W = 360, H = 440, GROUND = H - 10;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = W * dpr; cv.height = H * dpr;
+  ctx.scale(dpr, dpr);
+
+  const overlay = document.getElementById('overlay');
+  const msg = document.getElementById('msg');
+  const startBtn = document.getElementById('start');
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  const livesEl = document.getElementById('lives');
+
+  const dogImg = new Image();
+  dogImg.src = 'dog.webp';
+  const DOG_H = 104, DOG_W = DOG_H * 425 / 605;
+
+  let best = 0;
+  try { best = parseInt(localStorage.getItem('balloon-best'), 10) || 0; } catch { /* 無法存取就不記錄 */ }
+  bestEl.textContent = best;
+
+  let playing = false, score = 0, lives = 3, items = [], spawnIn = 0, last = 0;
+  let px = W / 2, dir = 0, flash = 0;
+
+  const drawBalloon = (x, y, r) => {
+    ctx.lineWidth = 3; ctx.strokeStyle = '#121212';
+    ctx.beginPath(); ctx.moveTo(x, y + r * 1.15); ctx.quadraticCurveTo(x - 6, y + r * 1.7, x + 3, y + r * 2.2); ctx.stroke();
+    ctx.fillStyle = '#e2262f';
+    ctx.beginPath(); ctx.ellipse(x, y, r * .86, r * 1.05, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(x - r * .1, y - r * .1, r * .55, Math.PI * 1.05, Math.PI * 1.4); ctx.stroke();
+  };
+
+  const drawFuzz = (x, y, r, spin) => {
+    ctx.strokeStyle = '#121212'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let k = 0; k < 44; k++) {
+      const a = spin + k * Math.PI * 2 / 44, len = r + 4 + (k * 7 % 5) * 2;
+      ctx.moveTo(x + Math.cos(a) * r * .7, y + Math.sin(a) * r * .7);
+      ctx.lineTo(x + Math.cos(a) * len, y + Math.sin(a) * len);
+    }
+    ctx.stroke();
+    ctx.fillStyle = '#121212';
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    for (const ex of [-r * .38, r * .38]) {
+      ctx.strokeStyle = '#cbb8a0'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(x + ex, y - r * .1, r * .24, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(x + ex, y - r * .1, r * .09, 0, Math.PI * 2); ctx.fill();
+    }
+  };
+
+  const paint = () => {
+    ctx.clearRect(0, 0, W, H);
+    for (const it of items) {
+      if (it.bad) drawFuzz(it.x, it.y, it.r, it.y / 40); else drawBalloon(it.x, it.y, it.r);
+    }
+    if (dogImg.complete && dogImg.naturalWidth) {
+      ctx.globalAlpha = flash > 0 && Math.floor(flash * 12) % 2 ? .35 : 1;
+      ctx.drawImage(dogImg, px - DOG_W / 2, GROUND - DOG_H, DOG_W, DOG_H);
+      ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = '#121212';
+    ctx.fillRect(0, GROUND - 2, W, H - GROUND + 2);
+  };
+
+  const updateHud = () => {
+    scoreEl.textContent = score;
+    bestEl.textContent = best;
+    livesEl.textContent = '♥'.repeat(lives) + '♡'.repeat(3 - lives);
+  };
+
+  const gameOver = () => {
+    playing = false;
+    if (score > best) {
+      best = score;
+      try { localStorage.setItem('balloon-best', best); } catch { /* 無法存取就不記錄 */ }
+    }
+    updateHud();
+    msg.innerHTML = `遊戲結束！<br>接到 ${score} 顆氣球`;
+    startBtn.textContent = '再玩一次';
+    overlay.hidden = false;
+  };
+
+  const step = now => {
+    if (!playing) return;
+    const dt = Math.min(.05, (now - last) / 1000);
+    last = now;
+    px = Math.max(DOG_W / 2, Math.min(W - DOG_W / 2, px + dir * 300 * dt));
+    flash = Math.max(0, flash - dt);
+
+    spawnIn -= dt;
+    if (spawnIn <= 0) {
+      spawnIn = Math.max(.42, 1 - score * .014) * (.7 + Math.random() * .6);
+      const bad = Math.random() < Math.min(.42, .22 + score * .006);
+      const r = bad ? 17 : 19;
+      items.push({ bad, r, x: r + 8 + Math.random() * (W - 2 * r - 16), y: -30, v: Math.min(330, 120 + score * 3.5) * (.85 + Math.random() * .3) });
+    }
+
+    const top = GROUND - DOG_H;
+    items = items.filter(it => {
+      it.y += it.v * dt;
+      const hit = Math.abs(it.x - px) < DOG_W * .42 + it.r * .6 && it.y + it.r > top + 10 && it.y - it.r < GROUND - 20;
+      if (hit) {
+        if (it.bad) { lives--; flash = .8; } else score++;
+        updateHud();
+        return false;
+      }
+      return it.y - it.r < H;
+    });
+
+    paint();
+    if (lives <= 0) gameOver(); else requestAnimationFrame(step);
+  };
+
+  const start = () => {
+    score = 0; lives = 3; items = []; spawnIn = .4; px = W / 2; dir = 0; flash = 0;
+    updateHud();
+    overlay.hidden = true;
+    playing = true;
+    last = performance.now();
+    requestAnimationFrame(step);
+  };
+
+  startBtn.addEventListener('click', start);
+
+  const follow = e => {
+    const r = cv.getBoundingClientRect();
+    px = Math.max(DOG_W / 2, Math.min(W - DOG_W / 2, (e.clientX - r.left) / r.width * W));
+  };
+  cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); follow(e); });
+  cv.addEventListener('pointermove', follow);
+
+  const held = new Set();
+  const steer = () => { dir = (held.has('ArrowRight') ? 1 : 0) - (held.has('ArrowLeft') ? 1 : 0); };
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if (playing) e.preventDefault();
+    held.add(e.key); steer();
+  });
+  document.addEventListener('keyup', e => { held.delete(e.key); steer(); });
+
+  dogImg.addEventListener('load', paint);
+  paint();
 })();
 </script>
 </body>
